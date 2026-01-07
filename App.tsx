@@ -731,6 +731,79 @@ const App: React.FC = () => {
                 >
                   🗑️ پاک کردن کل اطلاعات
                 </button>
+
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => {
+                      const data = {
+                        version: 1,
+                        timestamp: Date.now(),
+                        profile: userProfile,
+                        history: history,
+                      };
+                      const blob = new Blob([JSON.stringify(data, null, 2)], {
+                        type: 'application/json',
+                      });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `nissan-salamat-backup-${
+                        new Date().toISOString().split('T')[0]
+                      }.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="flex-1 bg-blue-50 text-blue-600 py-3 rounded-xl font-bold border-2 border-blue-100 hover:bg-blue-100 active:scale-95 transition-all"
+                  >
+                    📤 خروجی گرفتن
+                  </button>
+
+                  <label className="flex-1 cursor-pointer bg-slate-50 text-slate-600 py-3 rounded-xl font-bold border-2 border-slate-200 hover:bg-slate-100 active:scale-95 transition-all text-center flex items-center justify-center">
+                    📥 بازگردانی
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".json"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          try {
+                            const json = JSON.parse(
+                              event.target?.result as string
+                            );
+                            if (
+                              json.version === 1 &&
+                              json.profile &&
+                              Array.isArray(json.history)
+                            ) {
+                              if (
+                                window.confirm(
+                                  'آیا مطمئن هستید؟ اطلاعات فعلی شما جایگزین خواهد شد.'
+                                )
+                              ) {
+                                setUserProfile(json.profile);
+                                setHistory(json.history);
+                                alert('اطلاعات با موفقیت بازگردانی شد.');
+                              }
+                            } else {
+                              alert('فایل انتخاب شده معتبر نیست.');
+                            }
+                          } catch (err) {
+                            alert('خطا در خواندن فایل.');
+                          }
+                        };
+                        reader.readAsText(file);
+                        // Reset input
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
             </div>
           </div>
